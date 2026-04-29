@@ -1,13 +1,10 @@
 {
   "name": "@linagora/twake-tools",
   "version": "1.0.0",
-  "description": "CLI tools for Twake apps",
+  "description": "CLI tools for Cozy apps",
   "type": "module",
-  "workspaces": [
-    "cozy-app-release"
-  ],
   "bin": {
-    "cozy-app-release": "./cozy-app-release/bin/cozy-app-release.js"
+    "twake-tools": "./bin/twake-tools.js"
   },
   "scripts": {
     "test": "echo 'Run tests in individual tool directories'"

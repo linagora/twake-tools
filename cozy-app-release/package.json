@@ -1,7 +1,7 @@
 {
   "name": "cozy-app-release",
   "version": "1.0.0",
-  "description": "CLI tool for creating Twake app releases and betas",
+  "description": "CLI tool for creating Cozy app releases and betas",
   "main": "src/index.js",
   "type": "module",
   "bin": {
@@ -13,7 +13,7 @@
     "lint": "eslint src/"
   },
   "keywords": [
-    "twake",
+    "cozy",
     "release",
     "beta",
     "git",
