@@ -1,6 +1,6 @@
 # cozy-app-release
 
-CLI tool for creating Twake app releases and betas.
+CLI tool for creating Cozy app releases and betas.
 
 ## Installation
 
@@ -26,7 +26,7 @@ cozy-app-release
 
 ## Usage
 
-Run the command in your Twake app repository:
+Run the command in your Cozy app repository:
 
 ```bash
 npx github:linagora/cozy-app-release
@@ -34,7 +34,7 @@ npx github:linagora/cozy-app-release
 
 The CLI will guide you through:
 1. **New beta** - Create a new beta on a new release branch
-2. **Add beta** - Add a beta to an existing release branch  
+2. **Add beta** - Add a beta to an existing release branch
 3. **Final release** - Create a final release on an existing branch
 
 ## Features
