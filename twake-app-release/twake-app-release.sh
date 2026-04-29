@@ -103,7 +103,7 @@ get_package_version() {
 # Find the latest release branch (with the highest version number)
 get_latest_release_branch() {
     local branches
-    branches=$(git branch -r | grep "origin/release/" | sed 's/origin\///' | sort -V | tail -1)
+    branches=$(git branch -r | grep "origin/release/" | sed 's/origin\///' | sed 's/^[[:space:]]*//' | sort -V | tail -1)
 
     if [ -z "$branches" ]; then
         echo ""
