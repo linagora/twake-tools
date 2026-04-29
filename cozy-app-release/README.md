@@ -1,4 +1,4 @@
-# twake-app-release
+# cozy-app-release
 
 CLI tool for creating Twake app releases and betas.
 
@@ -7,14 +7,14 @@ CLI tool for creating Twake app releases and betas.
 ### Via npx from GitHub (recommended)
 
 ```bash
-npx github:linagora/twake-app-release
+npx github:linagora/cozy-app-release
 ```
 
 ### Local installation from GitHub
 
 ```bash
-npm install -g github:linagora/twake-app-release
-twake-app-release
+npm install -g github:linagora/cozy-app-release
+cozy-app-release
 ```
 
 ## Prerequisites
@@ -29,7 +29,7 @@ twake-app-release
 Run the command in your Twake app repository:
 
 ```bash
-npx github:linagora/twake-app-release
+npx github:linagora/cozy-app-release
 ```
 
 The CLI will guide you through:

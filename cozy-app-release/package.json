@@ -1,11 +1,11 @@
 {
-  "name": "twake-app-release",
+  "name": "cozy-app-release",
   "version": "1.0.0",
   "description": "CLI tool for creating Twake app releases and betas",
   "main": "src/index.js",
   "type": "module",
   "bin": {
-    "twake-app-release": "./bin/twake-app-release.js"
+    "cozy-app-release": "./bin/cozy-app-release.js"
   },
   "scripts": {
     "start": "node src/index.js",
