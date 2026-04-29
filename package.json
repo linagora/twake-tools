@@ -1,0 +1,31 @@
+{
+  "name": "@linagora/twake-tools",
+  "version": "1.0.0",
+  "description": "CLI tools for Twake apps",
+  "type": "module",
+  "bin": {
+    "cozy-app-release": "./cozy-app-release/bin/cozy-app-release.js"
+  },
+  "scripts": {
+    "test": "echo 'Run tests in individual tool directories'"
+  },
+  "dependencies": {
+    "@inquirer/prompts": "^7.0.0",
+    "chalk": "^5.3.0",
+    "execa": "^9.0.0",
+    "simple-git": "^3.22.0",
+    "semver": "^7.6.0"
+  },
+  "keywords": [
+    "twake",
+    "cozy",
+    "release",
+    "tools",
+    "beta"
+  ],
+  "author": "Linagora",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
