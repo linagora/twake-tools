@@ -7,19 +7,19 @@ CLI tool for creating Cozy app releases and betas.
 ### Via npx from GitHub (recommended)
 
 ```bash
-npx github:linagora/cozy-app-release
+npx github:linagora/twake-tools cozy-app-release
 ```
 
 ### Local installation from GitHub
 
 ```bash
-npm install -g github:linagora/cozy-app-release
-cozy-app-release
+npm install -g github:linagora/twake-tools
+twake-tools cozy-app-release
 ```
 
 ## Prerequisites
 
-- Node.js >= 18
+- Node.js >= 24
 - Git repository
 - GitHub CLI (`gh`) installed and authenticated
 - No uncommitted changes in the repository
@@ -29,7 +29,7 @@ cozy-app-release
 Run the command in your Cozy app repository:
 
 ```bash
-npx github:linagora/cozy-app-release
+npx github:linagora/twake-tools cozy-app-release
 ```
 
 The CLI will guide you through:
