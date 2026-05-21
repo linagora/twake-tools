@@ -1,23 +1,43 @@
 {
   "repositories": [
     {
-      "owner": "cozy",
+      "owner": "linagora",
       "repo": "cozy-home",
       "favorite": true
     },
     {
-      "owner": "cozy",
-      "repo": "cozy-drive",
+      "owner": "linagora",
+      "repo": "twake-drive",
       "favorite": true
     },
     {
-      "owner": "cozy",
+      "owner": "linagora",
+      "repo": "cozy-admin",
+      "favorite": true
+    },
+    {
+      "owner": "linagora",
       "repo": "cozy-notes",
       "favorite": true
     },
     {
-      "owner": "cozy",
+      "owner": "linagora",
       "repo": "cozy-settings",
+      "favorite": true
+    },
+    {
+      "owner": "cozy",
+      "repo": "cozy-twakechat",
+      "favorite": true
+    },
+    {
+      "owner": "cozy",
+      "repo": "cozy-twakemail",
+      "favorite": true
+    },
+    {
+      "owner": "cozy",
+      "repo": "cozy-lasuite-visio",
       "favorite": true
     },
     {
@@ -39,21 +59,6 @@
       "owner": "cozy",
       "repo": "cozy-store",
       "favorite": false
-    },
-    {
-      "owner": "cozy",
-      "repo": "cozy-twakechat",
-      "favorite": true
-    },
-    {
-      "owner": "cozy",
-      "repo": "cozy-twakemail",
-      "favorite": true
-    },
-    {
-      "owner": "linagora",
-      "repo": "cozy-admin",
-      "favorite": true
     }
   ]
 }
