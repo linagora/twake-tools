@@ -4,8 +4,9 @@
   <meta charset="utf-8">
   <title>Redirecting...</title>
   <script>
-    sessionStorage.setItem('spa-redirect', location.pathname + location.search + location.hash);
-    location.replace('/twake-tools/cozy-app-dashboard/');
+    var path = location.pathname + location.search + location.hash;
+    location.replace('/twake-tools/cozy-app-dashboard/?redirect=' + encodeURIComponent(path));
   </script>
 </head>
 </html>
+

@@ -55,6 +55,7 @@ jobs:
         run: |
           mkdir -p deploy/cozy-app-dashboard
           cp -r cozy-app-dashboard/dist/* deploy/cozy-app-dashboard/
+          cp cozy-app-dashboard/dist/404.html deploy/404.html
 
       - name: Setup Pages
         uses: actions/configure-pages@v5

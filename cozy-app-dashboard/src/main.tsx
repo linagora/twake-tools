@@ -9,10 +9,12 @@ import './styles.css';
 const BASE_PATH = '/twake-tools/cozy-app-dashboard';
 
 // Handle SPA redirect from 404.html on refresh
-if (typeof window !== 'undefined' && sessionStorage.getItem('spa-redirect')) {
-  const redirectPath = sessionStorage.getItem('spa-redirect');
-  sessionStorage.removeItem('spa-redirect');
-  window.history.replaceState(null, '', redirectPath);
+if (typeof window !== 'undefined') {
+  const params = new URLSearchParams(window.location.search);
+  const redirectPath = params.get('redirect');
+  if (redirectPath) {
+    window.history.replaceState(null, '', redirectPath);
+  }
 }
 
 // Clear cache when page loads to ensure fresh data after reload
