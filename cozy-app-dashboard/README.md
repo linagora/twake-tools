@@ -1,12 +1,11 @@
-Welcome to your new TanStack app! 
-
 # Getting Started
 
 To run this application:
 
 ```bash
 npm install
-npm run start
+npm run fetch-repos
+npm run dev
 ```
 
 # Building For Production
