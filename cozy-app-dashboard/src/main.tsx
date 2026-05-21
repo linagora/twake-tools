@@ -8,6 +8,13 @@ import './styles.css';
 // Base path for GitHub Pages - must match vite.config.ts base path
 const BASE_PATH = '/twake-tools/cozy-app-dashboard';
 
+// Handle SPA redirect from 404.html on refresh
+if (typeof window !== 'undefined' && sessionStorage.getItem('spa-redirect')) {
+  const redirectPath = sessionStorage.getItem('spa-redirect');
+  sessionStorage.removeItem('spa-redirect');
+  window.history.replaceState(null, '', redirectPath);
+}
+
 // Clear cache when page loads to ensure fresh data after reload
 if (typeof window !== 'undefined') {
   window.addEventListener('load', () => {
