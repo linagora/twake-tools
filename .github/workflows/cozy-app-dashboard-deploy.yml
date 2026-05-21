@@ -1,0 +1,67 @@
+name: Update Data and Deploy to GitHub Pages
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'cozy-app-dashboard/**'
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  update-and-deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+          cache-dependency-path: cozy-app-dashboard/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: cozy-app-dashboard
+
+      - name: Fetch GitHub data and update cache
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run fetch-repos
+        working-directory: cozy-app-dashboard
+
+      - name: Build project
+        run: npm run build
+        working-directory: cozy-app-dashboard
+
+      - name: Prepare deployment directory
+        run: |
+          mkdir -p deploy/cozy-app-dashboard
+          cp -r cozy-app-dashboard/dist/* deploy/cozy-app-dashboard/
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './deploy'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

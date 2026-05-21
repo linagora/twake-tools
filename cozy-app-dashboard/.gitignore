@@ -1,0 +1,23 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+.vinxi/
+.output/
+
+# Environment files
+.env
+.env.local
+.env.production
+
+# OS files
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+
+# Cached data
+data/cache/
+public/data/cache
