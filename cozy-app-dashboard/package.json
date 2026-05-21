@@ -1,5 +1,5 @@
 {
-  "name": "repo-dashboard",
+  "name": "cozy-app-dashboard",
   "private": true,
   "type": "module",
   "scripts": {

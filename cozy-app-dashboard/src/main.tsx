@@ -6,7 +6,7 @@ import { routeTree } from './routeTree.gen';
 import './styles.css';
 
 // Base path for GitHub Pages - must match vite.config.ts base path
-const BASE_PATH = '/repo-dashboard';
+const BASE_PATH = '/twake-tools/cozy-app-dashboard';
 
 // Clear cache when page loads to ensure fresh data after reload
 if (typeof window !== 'undefined') {

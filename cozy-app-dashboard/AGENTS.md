@@ -1,4 +1,4 @@
-# Agent Guidelines for repo-dashboard
+# Agent Guidelines for cozy-app-dashboard
 
 This document provides guidelines for agentic coding tools operating in this repository.
 

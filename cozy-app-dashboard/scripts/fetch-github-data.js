@@ -16,7 +16,7 @@ async function fetchRepoData(owner, repo) {
   const url = `https://api.github.com/repos/${owner}/${repo}`
   const headers = {
     'Accept': 'application/vnd.github.v3+json',
-    'User-Agent': 'repo-dashboard'
+    'User-Agent': 'cozy-app-dashboard'
   }
 
   if (GITHUB_TOKEN) {
@@ -38,7 +38,7 @@ async function fetchReleases(owner, repo) {
   const url = `https://api.github.com/repos/${owner}/${repo}/releases?per_page=100`
   const headers = {
     'Accept': 'application/vnd.github.v3+json',
-    'User-Agent': 'repo-dashboard'
+    'User-Agent': 'cozy-app-dashboard'
   }
 
   if (GITHUB_TOKEN) {
@@ -60,7 +60,7 @@ async function fetchWorkflows(owner, repo) {
   const url = `https://api.github.com/repos/${owner}/${repo}/actions/workflows`
   const headers = {
     'Accept': 'application/vnd.github.v3+json',
-    'User-Agent': 'repo-dashboard'
+    'User-Agent': 'cozy-app-dashboard'
   }
 
   if (GITHUB_TOKEN) {
@@ -80,7 +80,7 @@ async function fetchWorkflowRuns(owner, repo, workflowId, maxRuns = 500) {
   // Fetch workflow runs for a specific workflow on master branch with pagination
   const headers = {
     'Accept': 'application/vnd.github.v3+json',
-    'User-Agent': 'repo-dashboard'
+    'User-Agent': 'cozy-app-dashboard'
   }
 
   if (GITHUB_TOKEN) {
@@ -129,7 +129,7 @@ async function fetchPackageJson(owner, repo) {
   const url = `https://api.github.com/repos/${owner}/${repo}/contents/package.json`
   const headers = {
     'Accept': 'application/vnd.github.v3+json',
-    'User-Agent': 'repo-dashboard'
+    'User-Agent': 'cozy-app-dashboard'
   }
 
   if (GITHUB_TOKEN) {

@@ -18,8 +18,8 @@ export default defineConfig({
 		react(),
 	],
 	// Base path for GitHub Pages project site
-	// For project sites (username.github.io/repo-dashboard), use '/repo-dashboard/'
-	base: '/repo-dashboard/',
+	// For project sites (username.github.io/twake-tools/cozy-app-dashboard)
+	base: '/twake-tools/cozy-app-dashboard/',
 	build: {
 		outDir: 'dist',
 		emptyOutDir: true,
