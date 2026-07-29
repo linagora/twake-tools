@@ -1,0 +1,23 @@
+{
+  "name": "cozy-bender",
+  "version": "2.0.0",
+  "description": "CLI tool to drive the Bender API: deploy apps and set feature flags on Cozy instances",
+  "type": "module",
+  "bin": {
+    "cozy-bender": "./bin/cozy-bender.js"
+  },
+  "scripts": {
+    "test": "node --test"
+  },
+  "keywords": [
+    "cozy",
+    "bender",
+    "instance",
+    "feature-flags"
+  ],
+  "author": "Twake",
+  "license": "MIT",
+  "engines": {
+    "node": ">=24"
+  }
+}
