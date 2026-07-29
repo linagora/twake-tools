@@ -104,3 +104,37 @@ test('request logs the raw body when verbose', async () => {
     .request('GET', '/x');
   assert.match(logged.join('\n'), /\{"a":1\}/);
 });
+
+test('request resolves with status 0 for a non-serializable body instead of rejecting', async () => {
+  const fetchImpl = async () => new Response('{}', { status: 200 });
+  const circular = {};
+  circular.self = circular;
+  const res = await createClient({ token: 't', fetchImpl }).request('POST', '/x', circular);
+  assert.equal(res.ok, false);
+  assert.equal(res.status, 0);
+  assert.match(res.error, /could not reach Bender/);
+});
+
+test('request logs the network error text when verbose', async () => {
+  const logged = [];
+  const fetchImpl = async () => {
+    throw new TypeError('fetch failed');
+  };
+  await createClient({ token: 't', fetchImpl, verbose: true, log: (l) => logged.push(l) })
+    .request('GET', '/x');
+  assert.match(logged.join('\n'), /fetch failed/);
+});
+
+test('request resets status to 0 if reading the response body fails', async () => {
+  // A minimal fake response: status resolves but reading the body throws,
+  // so status must not be left standing as a false "success".
+  const fetchImpl = async () => ({
+    status: 200,
+    text: async () => {
+      throw new Error('stream error');
+    },
+  });
+  const res = await createClient({ token: 't', fetchImpl }).request('GET', '/x');
+  assert.equal(res.ok, false);
+  assert.equal(res.status, 0);
+});

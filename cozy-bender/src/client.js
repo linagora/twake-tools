@@ -55,19 +55,31 @@ export function createClient({
         'Content-Type': 'application/json',
       },
     };
-    if (body !== undefined) init.body = JSON.stringify(body);
 
     let status = 0;
     let rawBody = '';
+    let requestError = null;
     try {
+      // Serializing the body can throw (circular reference, BigInt) just like a
+      // failed fetch can, so it must stay inside this try: request() must
+      // resolve to a uniform {status: 0, ...} result rather than reject either way.
+      if (body !== undefined) init.body = JSON.stringify(body);
       const response = await fetchImpl(`${baseUrl}${path}`, init);
       status = response.status;
+      // Read the body in the same try: if this throws, the response was never
+      // actually read, so status must not be left standing as if it had been.
       rawBody = await response.text();
-    } catch {
-      // Keep status 0 so callers get one uniform "could not reach Bender" error.
+    } catch (err) {
+      // Keep status 0 so callers get one uniform "could not reach Bender" error,
+      // but remember the real error so verbose mode can still show it below.
+      status = 0;
+      rawBody = '';
+      requestError = err;
     }
 
-    if (verbose) log(rawBody);
+    // Log the real error under verbose, not the empty rawBody left by the
+    // catch above, so DNS/TLS/serialization failures are debuggable.
+    if (verbose) log(requestError ? String(requestError?.message ?? requestError) : rawBody);
 
     let data = null;
     try {
