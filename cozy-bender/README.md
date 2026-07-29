@@ -70,6 +70,10 @@ cozy-bender flags set prod a.mycozy.cloud,b.mycozy.cloud \
 Flags are set with `source: instance`. Environment-wide defaults and ratio
 rollouts are not supported.
 
+The exact wire encoding of `value` (native JSON vs. a JSON string) is not yet
+confirmed against a live Bender — verify with `flags list` after your first
+`set`, especially before relying on `old.flag=null` to delete a flag.
+
 ### `flags list`
 
 ```bash

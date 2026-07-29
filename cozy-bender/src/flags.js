@@ -57,6 +57,8 @@ export async function flagsSet(args, deps = {}) {
   let token;
   try {
     if (!env || !instanceList) throw new Error(USAGE);
+    // Drop empty entries (from "a.cozy,,b.cozy" or a trailing comma) rather than
+    // the bash IFS-split behaviour this replaces, which would PUT to an empty domain.
     instances = instanceList.split(',').filter(Boolean);
     if (instances.length === 0) throw new Error(USAGE);
     flags = parseFlagArgs(flagArgs);
@@ -86,7 +88,10 @@ export async function flagsSet(args, deps = {}) {
       const res = await client.request('PUT', path, body);
 
       if (res.ok) {
-        log(`  ${ok(`${name} = ${JSON.stringify(value)}`, s)}`);
+        // Log what was actually sent over the wire, not the parsed input value,
+        // so this line stays the source of truth once encodeFlagValue's
+        // encoding choice is confirmed against a live Bender.
+        log(`  ${ok(`${name} = ${JSON.stringify(encodeFlagValue(value))}`, s)}`);
       } else {
         failures.push(`${instance} (${name})`);
         log(`  ${fail(`${name} — ${res.error}`, s)}`);
@@ -107,15 +112,21 @@ export async function flagsSet(args, deps = {}) {
 const LIST_USAGE = `Usage: cozy-bender flags list <env> <instance>
 Example: cozy-bender flags list prod a.mycozy.cloud`;
 
-export function formatFlags({ features = {}, sources = [] }) {
-  const entries = Object.entries(features);
+export function formatFlags({ features, sources }) {
+  // Bender returns `{"features": null}` (not `undefined`) when an instance has
+  // no flag document at all, and default parameters only cover `undefined` —
+  // coerce explicitly so that shape doesn't crash instead of printing "No flags set".
+  const entries = Object.entries(features ?? {});
   if (entries.length === 0) return ['No flags set'];
 
   const lines = entries.map(([name, value]) => `  ${name} = ${JSON.stringify(value)}`);
 
   // `sources` tells which layer each flag comes from (instance, context, ratio),
   // which is what makes it possible to tell an instance flag from an inherited one.
-  const withFlags = sources.filter((s) => Object.keys(s.attributes ?? {}).length > 0);
+  // Also guard against a malformed non-array shape rather than crashing on .filter.
+  const withFlags = (Array.isArray(sources) ? sources : []).filter(
+    (source) => Object.keys(source.attributes ?? {}).length > 0
+  );
   if (withFlags.length > 0) {
     lines.push('', 'Sources:');
     for (const source of withFlags) {
@@ -137,6 +148,10 @@ export async function flagsList(args, deps = {}) {
   let token;
   try {
     if (!env || !instance) throw new Error(LIST_USAGE);
+    // Unlike `apps update`/`flags set`, this endpoint takes exactly one
+    // instance. A comma-separated list would silently build a path segment
+    // like "a.cozy,b.cozy" and 404 instead of the clear "single instance" error.
+    if (instance.includes(',')) throw new Error('flags list takes a single instance');
     token = deps.token ?? readToken();
   } catch (error) {
     log(error.message);

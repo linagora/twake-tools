@@ -49,6 +49,24 @@ test('builds the request path and body', () => {
   assert.equal(body.source, 'instance');
 });
 
+// Characterisation tests: pin the current (unconfirmed) native-JSON encoding
+// so that flipping `encodeFlagValue` to JSON.stringify is a deliberate,
+// visible red-test change rather than something every existing test misses.
+test('encodes a boolean value natively, not as a JSON string', () => {
+  assert.equal(buildFlagSet({ env: 'prod', instance: 'a.cozy', name: 'a.flag', value: true }).body.value, true);
+});
+
+test('encodes null natively, not as the string "null"', () => {
+  assert.equal(buildFlagSet({ env: 'prod', instance: 'a.cozy', name: 'a.flag', value: null }).body.value, null);
+});
+
+test('encodes a non-scalar value natively, not as a JSON string', () => {
+  assert.deepEqual(
+    buildFlagSet({ env: 'prod', instance: 'a.cozy', name: 'a.flag', value: [1, 2] }).body.value,
+    [1, 2]
+  );
+});
+
 test('sets every flag on every instance', async () => {
   const calls = [];
   const fetchImpl = async (url, init) => {
@@ -148,6 +166,16 @@ test('tolerates a response without a sources array', () => {
   assert.match(out, /a\.flag = 1/);
 });
 
+test('tolerates features being null instead of an object', () => {
+  // Bender returns {"features": null} for an instance with no flag document.
+  assert.match(formatFlags({ features: null, sources: [] }).join('\n'), /No flags set/);
+});
+
+test('tolerates sources being a non-array shape', () => {
+  const out = formatFlags({ features: { a: 1 }, sources: { x: {} } }).join('\n');
+  assert.match(out, /a = 1/);
+});
+
 test('lists the flags of one instance', async () => {
   let path;
   const fetchImpl = async (url) => {
@@ -186,4 +214,21 @@ test('exits 1 with usage when the instance is missing', async () => {
   const code = await flagsList(['prod'], { token: 'tok', log: (l) => lines.push(l) });
   assert.equal(code, 1);
   assert.match(lines.join('\n'), /Usage: cozy-bender flags list/);
+});
+
+test('rejects a comma-separated instance list before calling Bender', async () => {
+  let called = false;
+  const lines = [];
+  const code = await flagsList(['prod', 'a.cozy,b.cozy'], {
+    fetchImpl: async () => {
+      called = true;
+      return new Response('{}', { status: 200 });
+    },
+    token: 'tok',
+    log: (l) => lines.push(l),
+  });
+
+  assert.equal(code, 1);
+  assert.equal(called, false);
+  assert.match(lines.join('\n'), /flags list takes a single instance/);
 });

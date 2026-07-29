@@ -15,6 +15,12 @@ test('ok and fail mark their line', () => {
   assert.equal(fail('nope'), '✘ nope');
 });
 
+test('ok and fail colour their mark when given styles', () => {
+  const s = styles(true);
+  assert.equal(ok('done', s), `${s.green}✔${s.reset} done`);
+  assert.equal(fail('nope', s), `${s.red}✘${s.reset} nope`);
+});
+
 test('summary reports every operation succeeding', () => {
   assert.equal(
     summaryLine({ total: 3, failures: [], label: 'instance(s) updated' }),
@@ -32,4 +38,9 @@ test('summary lists the failures', () => {
 test('summary colours the count red when something failed', () => {
   const line = summaryLine({ total: 2, failures: ['a.cozy'], label: 'x' }, styles(true));
   assert.match(line, /^\x1b\[31m\x1b\[1m1\/2 x\x1b\[0m/);
+});
+
+test('summary colours the count green when everything succeeded', () => {
+  const line = summaryLine({ total: 2, failures: [], label: 'x' }, styles(true));
+  assert.match(line, /^\x1b\[32m\x1b\[1m2\/2 x\x1b\[0m/);
 });

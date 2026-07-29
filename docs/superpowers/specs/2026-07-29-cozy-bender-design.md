@@ -55,6 +55,11 @@ flag jetable sur une instance de dev, le relire via `GET .../features`, puis le
 supprimer avec `null`. Le résultat conditionne l'encodage dans `src/flags.js` et
 doit être noté en commentaire dans ce fichier.
 
+**Mise à jour (implémentation) :** cette sonde n'a pas été exécutée — aucune
+instance de dev ni token n'était disponible. Le code livré part sur l'encodage
+JSON natif (`encodeFlagValue` identité), **non confirmé** contre un Bender
+réel ; la tâche 1 du plan reste donc ouverte.
+
 ## Décisions
 
 | Sujet | Décision |

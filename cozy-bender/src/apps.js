@@ -17,6 +17,8 @@ export function parseAppsUpdateArgs(args) {
     throw new Error(`force must be "true" or "false" (got "${force}")`);
   }
 
+  // Drop empty entries (from "a.cozy,,b.cozy" or a trailing comma) rather than
+  // the bash IFS-split behaviour this replaces, which would PUT to an empty domain.
   const instances = instanceList.split(',').filter(Boolean);
   if (instances.length === 0) throw new Error(USAGE);
 
