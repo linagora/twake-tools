@@ -6,7 +6,7 @@ CLI tools for Cozy apps
 
 - [`cozy-app-release`](cozy-app-release) - create app releases and betas
 - [`cozy-app-updater`](cozy-app-updater) - update dependencies in multiple apps locally
-- [`cozy-app-bender-updater`](cozy-app-bender-updater) - update an app on instances through Bender
+- [`cozy-bender`](cozy-bender) - deploy apps and set feature flags on instances through Bender
 
 Run `npx github:linagora/twake-tools` without arguments to list them.
 
