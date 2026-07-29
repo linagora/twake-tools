@@ -1,3 +1,5 @@
+import { appsUpdate } from './apps.js';
+
 export const USAGE = `Usage: cozy-bender <command> [args...]
 
   cozy-bender apps update <env> <instances> <slug> <org/repo> [branch] [force]
@@ -11,7 +13,9 @@ https://bender.cozycloud.cc/ -> Profile -> "Personal API token".`;
 
 // Handlers are looked up by "<group> <action>" so that adding a Bender endpoint
 // is one entry here plus one module under src/.
-const COMMANDS = {};
+const COMMANDS = {
+  'apps update': appsUpdate,
+};
 
 export async function main(argv, deps = {}) {
   const log = deps.log ?? console.log;

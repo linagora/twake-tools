@@ -28,3 +28,10 @@ test('exits 1 on a known group with an unknown action', async () => {
   assert.equal(code, 1);
   assert.match(lines.join('\n'), /Unknown command: flags wat/);
 });
+
+test('routes "apps update" to the apps handler', async () => {
+  const lines = [];
+  const code = await main(['apps', 'update', 'prod'], { log: (l) => lines.push(l), token: 'tok' });
+  assert.equal(code, 1);
+  assert.match(lines.join('\n'), /Usage: cozy-bender apps update/);
+});
