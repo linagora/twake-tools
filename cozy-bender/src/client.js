@@ -54,6 +54,11 @@ export function createClient({
         Accept: 'application/json',
         'Content-Type': 'application/json',
       },
+      // An expired/invalid token makes Bender bounce to the login page rather
+      // than answer the API call. `fetch`'s default `redirect: "follow"` would
+      // silently turn that bounce into a 200 with an HTML body, masking the
+      // auth failure as success. Surface the raw redirect instead.
+      redirect: 'manual',
     };
 
     let status = 0;

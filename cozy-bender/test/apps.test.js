@@ -110,6 +110,22 @@ test('keeps going after a failure and exits 1', async () => {
   assert.match(out, /1\/2 instance\(s\) updated — failed: a\.cozy/);
 });
 
+test('treats a login-page redirect as a failure, not a silent success', async () => {
+  // Regression test for the redirect-following bug: an expired token used to
+  // print a green checkmark because fetch quietly followed the Bender bounce.
+  const fetchImpl = async () => new Response('', { status: 302 });
+  const lines = [];
+  const code = await appsUpdate(['prod', 'a.cozy', 'home', 'cozy/cozy-home'], {
+    fetchImpl,
+    token: 'tok',
+    isTTY: false,
+    log: (l) => lines.push(l),
+  });
+
+  assert.equal(code, 1);
+  assert.match(lines.join('\n'), /✘ a\.cozy: authentication failed/);
+});
+
 test('exits 1 with usage on bad arguments, without calling Bender', async () => {
   let called = false;
   const lines = [];

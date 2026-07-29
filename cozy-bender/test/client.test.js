@@ -125,6 +125,16 @@ test('request logs the network error text when verbose', async () => {
   assert.match(logged.join('\n'), /fetch failed/);
 });
 
+test('request treats a login-page redirect as an auth failure, not a success', async () => {
+  // With the default `redirect: "follow"`, fetch would silently swallow this
+  // 302 and hand back a 200 from the login page — this pins `redirect: "manual"`.
+  const fetchImpl = async () => new Response('', { status: 302 });
+  const res = await createClient({ token: 't', fetchImpl }).request('GET', '/x');
+  assert.equal(res.ok, false);
+  assert.equal(res.status, 302);
+  assert.match(res.error, /authentication failed/);
+});
+
 test('request resets status to 0 if reading the response body fails', async () => {
   // A minimal fake response: status resolves but reading the body throws,
   // so status must not be left standing as a false "success".
