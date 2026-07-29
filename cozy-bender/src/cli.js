@@ -1,5 +1,5 @@
 import { appsUpdate } from './apps.js';
-import { flagsSet } from './flags.js';
+import { flagsList, flagsSet } from './flags.js';
 
 export const USAGE = `Usage: cozy-bender <command> [args...]
 
@@ -17,6 +17,7 @@ https://bender.cozycloud.cc/ -> Profile -> "Personal API token".`;
 const COMMANDS = {
   'apps update': appsUpdate,
   'flags set': flagsSet,
+  'flags list': flagsList,
 };
 
 export async function main(argv, deps = {}) {

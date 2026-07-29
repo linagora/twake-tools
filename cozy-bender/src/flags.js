@@ -103,3 +103,61 @@ export async function flagsSet(args, deps = {}) {
   );
   return failures.length ? 1 : 0;
 }
+
+const LIST_USAGE = `Usage: cozy-bender flags list <env> <instance>
+Example: cozy-bender flags list prod a.mycozy.cloud`;
+
+export function formatFlags({ features = {}, sources = [] }) {
+  const entries = Object.entries(features);
+  if (entries.length === 0) return ['No flags set'];
+
+  const lines = entries.map(([name, value]) => `  ${name} = ${JSON.stringify(value)}`);
+
+  // `sources` tells which layer each flag comes from (instance, context, ratio),
+  // which is what makes it possible to tell an instance flag from an inherited one.
+  const withFlags = sources.filter((s) => Object.keys(s.attributes ?? {}).length > 0);
+  if (withFlags.length > 0) {
+    lines.push('', 'Sources:');
+    for (const source of withFlags) {
+      lines.push(`  ${source.id}`);
+      for (const [name, value] of Object.entries(source.attributes)) {
+        lines.push(`    ${name} = ${JSON.stringify(value)}`);
+      }
+    }
+  }
+
+  return lines;
+}
+
+export async function flagsList(args, deps = {}) {
+  const log = deps.log ?? console.log;
+  const s = styles(deps.isTTY ?? process.stdout.isTTY ?? false);
+  const [env, instance] = args;
+
+  let token;
+  try {
+    if (!env || !instance) throw new Error(LIST_USAGE);
+    token = deps.token ?? readToken();
+  } catch (error) {
+    log(error.message);
+    return 1;
+  }
+
+  const client = createClient({
+    token,
+    fetchImpl: deps.fetchImpl,
+    verbose: deps.verbose ?? process.env.BENDER_VERBOSE === '1',
+    log,
+  });
+  const res = await client.request('GET', `/instances/${env}/${instance}/features`);
+
+  if (!res.ok) {
+    log(fail(`${instance}: ${res.error}`, s));
+    return 1;
+  }
+
+  log(`${s.bold}Flags on ${instance}${s.reset} ${s.dim}(env: ${env})${s.reset}`);
+  log('');
+  for (const line of formatFlags(res.data ?? {})) log(line);
+  return 0;
+}

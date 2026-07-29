@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { parseFlagArg, parseFlagArgs, buildFlagSet, flagsSet } from '../src/flags.js';
+import { parseFlagArg, parseFlagArgs, buildFlagSet, flagsSet, formatFlags, flagsList } from '../src/flags.js';
 
 test('parses JSON values', () => {
   assert.deepEqual(parseFlagArg('a.flag=true'), { name: 'a.flag', value: true });
@@ -122,4 +122,68 @@ test('exits 1 with usage when arguments are missing', async () => {
   const code = await flagsSet(['prod'], { token: 'tok', log: (l) => lines.push(l) });
   assert.equal(code, 1);
   assert.match(lines.join('\n'), /Usage: cozy-bender flags set/);
+});
+
+test('formats effective flags and their sources', () => {
+  const lines = formatFlags({
+    features: { 'a.flag': true, 'b.flag': 'dark' },
+    sources: [
+      { id: 'io.cozy.settings.flags.instance', attributes: { 'a.flag': true } },
+      { id: 'io.cozy.settings.context', attributes: { 'b.flag': 'dark' } },
+    ],
+  });
+  const out = lines.join('\n');
+  assert.match(out, /a\.flag = true/);
+  assert.match(out, /b\.flag = "dark"/);
+  assert.match(out, /io\.cozy\.settings\.flags\.instance/);
+  assert.match(out, /io\.cozy\.settings\.context/);
+});
+
+test('says so when an instance has no flags', () => {
+  assert.match(formatFlags({ features: {}, sources: [] }).join('\n'), /No flags set/);
+});
+
+test('tolerates a response without a sources array', () => {
+  const out = formatFlags({ features: { 'a.flag': 1 } }).join('\n');
+  assert.match(out, /a\.flag = 1/);
+});
+
+test('lists the flags of one instance', async () => {
+  let path;
+  const fetchImpl = async (url) => {
+    path = new URL(url).pathname;
+    return new Response('{"features":{"a.flag":true},"sources":[]}', { status: 200 });
+  };
+  const lines = [];
+  const code = await flagsList(['prod', 'a.cozy'], {
+    fetchImpl,
+    token: 'tok',
+    isTTY: false,
+    log: (l) => lines.push(l),
+  });
+
+  assert.equal(code, 0);
+  assert.equal(path, '/instances/prod/a.cozy/features');
+  assert.match(lines.join('\n'), /a\.flag = true/);
+});
+
+test('reports a failed read and exits 1', async () => {
+  const fetchImpl = async () => new Response('{"error":"Instance not found"}', { status: 404 });
+  const lines = [];
+  const code = await flagsList(['prod', 'a.cozy'], {
+    fetchImpl,
+    token: 'tok',
+    isTTY: false,
+    log: (l) => lines.push(l),
+  });
+
+  assert.equal(code, 1);
+  assert.match(lines.join('\n'), /HTTP 404, Instance not found/);
+});
+
+test('exits 1 with usage when the instance is missing', async () => {
+  const lines = [];
+  const code = await flagsList(['prod'], { token: 'tok', log: (l) => lines.push(l) });
+  assert.equal(code, 1);
+  assert.match(lines.join('\n'), /Usage: cozy-bender flags list/);
 });
