@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-import { execSync } from 'child_process';
-import { existsSync, readFileSync, writeFileSync, mkdirSync, cpSync, rmSync } from 'fs';
+import { execSync, spawnSync } from 'child_process';
+import { existsSync, readdirSync, readFileSync, writeFileSync, mkdirSync, cpSync, rmSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import os from 'os';
@@ -14,16 +14,27 @@ const homeDir = os.homedir();
 const toolsCacheDir = join(homeDir, '.twake-tools-cache');
 
 const tool = process.argv[2];
+const toolArgs = process.argv.slice(3);
+
+// A tool is any top-level directory exposing bin/<dir-name>.js
+function availableTools() {
+  return readdirSync(rootDir, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory() && !entry.name.startsWith('.'))
+    .filter((entry) => existsSync(join(rootDir, entry.name, 'bin', `${entry.name}.js`)))
+    .map((entry) => entry.name);
+}
 
 if (!tool) {
-  console.error('Usage: npx github:linagora/twake-tools <tool-name>');
+  console.error('Usage: npx github:linagora/twake-tools <tool-name> [tool-args...]');
   console.error('');
   console.error('Available tools:');
-  console.error('  cozy-app-release');
+  for (const name of availableTools()) {
+    console.error(`  ${name}`);
+  }
   console.error('');
   console.error('Or install globally:');
   console.error('  npm install -g github:linagora/twake-tools');
-  console.error('  twake-tools cozy-app-release');
+  console.error('  twake-tools <tool-name> [tool-args...]');
   process.exit(1);
 }
 
@@ -76,9 +87,12 @@ const currentVersion = toolPackage.version;
 
 // Check cache
 const cacheFile = join(cacheDir, `${tool}.json`);
-let needsInstall = true;
+const hasDependencies =
+  Object.keys(toolPackage.dependencies || {}).length > 0 ||
+  Object.keys(toolPackage.devDependencies || {}).length > 0;
+let needsInstall = hasDependencies;
 
-if (existsSync(cacheFile)) {
+if (hasDependencies && existsSync(cacheFile)) {
   try {
     const cache = JSON.parse(readFileSync(cacheFile, 'utf8'));
     if (cache.version === currentVersion && existsSync(join(toolPath, 'node_modules'))) {
@@ -122,11 +136,16 @@ if (!existsSync(binPath)) {
   process.exit(1);
 }
 
-try {
-  execSync(`node ${binPath}`, {
-    cwd: process.cwd(), // Important: execute in current working directory
-    stdio: 'inherit'
-  });
-} catch (e) {
-  process.exit(e.status || 1);
+// Arguments are forwarded as-is, so tools taking parameters can be run as a
+// one-liner: npx github:linagora/twake-tools <tool-name> <arg> <arg>...
+const { status, error } = spawnSync(process.execPath, [binPath, ...toolArgs], {
+  cwd: process.cwd(), // Important: execute in current working directory
+  stdio: 'inherit'
+});
+
+if (error) {
+  console.error(`Error: failed to run "${tool}" - ${error.message}`);
+  process.exit(1);
 }
+
+process.exit(status ?? 1);

@@ -1,0 +1,24 @@
+{
+  "name": "cozy-app-bender-updater",
+  "version": "1.0.0",
+  "description": "CLI tool to update a Cozy app on instances through Bender",
+  "type": "module",
+  "bin": {
+    "cozy-app-bender-updater": "./bin/cozy-app-bender-updater.js"
+  },
+  "scripts": {
+    "start": "./update-app-bender.sh",
+    "test": "echo 'No tests yet - add functional tests when needed'"
+  },
+  "keywords": [
+    "cozy",
+    "bender",
+    "update",
+    "instance"
+  ],
+  "author": "Twake",
+  "license": "MIT",
+  "engines": {
+    "node": ">=24"
+  }
+}
