@@ -1,4 +1,6 @@
 import { promises as fs } from 'fs';
+import semver from 'semver';
+
 import { error } from './config.js';
 
 export async function getPackageVersion() {
@@ -6,7 +8,7 @@ export async function getPackageVersion() {
     const content = await fs.readFile('package.json', 'utf8');
     const pkg = JSON.parse(content);
 
-    if (!pkg.version || !/^\d+\.\d+\.\d+$/.test(pkg.version)) {
+    if (!semver.valid(pkg.version) || !/^\d+\.\d+\.\d+$/.test(pkg.version)) {
       error('Unable to read valid version from package.json');
     }
 
