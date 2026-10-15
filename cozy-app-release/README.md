@@ -46,6 +46,19 @@ The base branch is updated only by a fast-forward pull. The version bump uses
 a normal push and stops if the remote branch has diverged. Resolve the branch
 divergence before retrying; an already published beta must not be recreated.
 
+### Prepared release notes
+
+Use a Markdown file for a reviewed, human-readable changelog:
+
+```bash
+npx github:linagora/twake-tools cozy-app-release --notes-file /path/to/release-notes.md
+```
+
+This works for a new beta, another beta, or a final release. The file is read
+before any branch changes, and its contents are published as written. Missing,
+unreadable, or empty files stop the command before release preparation begins.
+Without this option, GitHub generates the notes as before.
+
 ## Features
 
 - Interactive menu with @inquirer/prompts
