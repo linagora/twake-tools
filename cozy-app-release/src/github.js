@@ -26,14 +26,19 @@ export async function checkGhAuth() {
   }
 }
 
-export async function createGitHubRelease(tag, isPrerelease = false) {
+export async function createGitHubRelease(tag, isPrerelease = false, releaseNotes = null) {
   info(`Creating GitHub release for ${tag}...`);
 
   const args = [
     'release', 'create', tag,
-    '--title', tag,
-    '--generate-notes'
+    '--title', tag
   ];
+
+  if (releaseNotes === null) {
+    args.push('--generate-notes');
+  } else {
+    args.push('--notes-file', '-');
+  }
 
   if (isPrerelease) {
     args.push('--prerelease');
@@ -41,7 +46,7 @@ export async function createGitHubRelease(tag, isPrerelease = false) {
 
   try {
     await execa('gh', args, {
-      stdin: 'ignore',
+      ...(releaseNotes === null ? { stdin: 'ignore' } : { input: releaseNotes }),
       timeout: 60000
     });
     success(`GitHub release created: ${tag}`);

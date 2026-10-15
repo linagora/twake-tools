@@ -1,3 +1,6 @@
+import { readFile } from 'node:fs/promises';
+import { parseArgs } from 'node:util';
+
 import * as git from './git.js';
 import * as version from './version.js';
 import * as github from './github.js';
@@ -5,7 +8,14 @@ import * as ui from './ui.js';
 import * as release from './release.js';
 import { error, success, info } from './config.js';
 
-export async function main() {
+export async function main(args = process.argv.slice(2)) {
+  const { values } = parseArgs({ args, options: { 'notes-file': { type: 'string' } } });
+  const notesPath = values['notes-file'] ?? null;
+  const releaseNotes = notesPath === null ? null : await readFile(notesPath, 'utf8');
+  if (releaseNotes !== null && !releaseNotes.trim()) {
+    error('Release notes file must not be empty');
+  }
+
   // Check prerequisites
   const isGitRepo = await git.isGitRepository();
   if (!isGitRepo) {
@@ -45,7 +55,7 @@ export async function main() {
 
     switch (choice) {
       case 'new-beta':
-        await release.createNewBetaBranch(currentVersion, baseBranch);
+        await release.createNewBetaBranch(currentVersion, baseBranch, releaseNotes);
         success('Operation completed successfully!');
         return;
 
@@ -53,7 +63,7 @@ export async function main() {
         if (!latestBranch) {
           error('Option not available');
         }
-        await release.addBetaToExisting(latestBranch);
+        await release.addBetaToExisting(latestBranch, releaseNotes);
         success('Operation completed successfully!');
         return;
 
@@ -61,7 +71,7 @@ export async function main() {
         if (!latestBranch) {
           error('Option not available');
         }
-        await release.createFinalRelease(latestBranch);
+        await release.createFinalRelease(latestBranch, releaseNotes);
         success('Operation completed successfully!');
         return;
 
