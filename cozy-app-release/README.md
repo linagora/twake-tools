@@ -37,6 +37,11 @@ The CLI will guide you through:
 2. **Add beta** - Add a beta to an existing release branch
 3. **Final release** - Create a final release on an existing branch
 
+Before creating a new beta, choose the next development version for the base
+branch. The next minor version is suggested; you can enter any greater stable
+version, or `skip` to leave the base branch unchanged. The release branch keeps
+the current version. Cancelling this prompt creates no release branch or tag.
+
 The base branch is updated only by a fast-forward pull. The version bump uses
 a normal push and stops if the remote branch has diverged. Resolve the branch
 divergence before retrying; an already published beta must not be recreated.
