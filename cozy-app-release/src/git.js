@@ -32,7 +32,7 @@ export async function detectBaseBranch() {
 
 export async function checkoutAndPull(branch) {
   await git.checkout(branch);
-  await git.pull('origin', branch);
+  await git.pull('origin', branch, ['--ff-only']);
 }
 
 export async function getLatestReleaseBranch() {
