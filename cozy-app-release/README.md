@@ -37,6 +37,10 @@ The CLI will guide you through:
 2. **Add beta** - Add a beta to an existing release branch
 3. **Final release** - Create a final release on an existing branch
 
+The base branch is updated only by a fast-forward pull. The version bump uses
+a normal push and stops if the remote branch has diverged. Resolve the branch
+divergence before retrying; an already published beta must not be recreated.
+
 ## Features
 
 - Interactive menu with @inquirer/prompts

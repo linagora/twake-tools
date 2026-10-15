@@ -89,7 +89,7 @@ export async function bumpVersionOnMaster(oldVersion, baseBranch) {
 
   await gitClient.add(['package.json', 'manifest.webapp']);
   await gitClient.commit(`chore: Bump to ${newVersion}`);
-  await gitClient.push(['origin', baseBranch, '--force-with-lease']);
+  await gitClient.push(['origin', baseBranch]);
 
   success(`Version bumped to ${newVersion} on ${baseBranch}`);
 }
