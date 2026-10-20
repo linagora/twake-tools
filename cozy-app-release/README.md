@@ -37,6 +37,11 @@ The CLI will guide you through:
 2. **Add beta** - Add a beta to an existing release branch
 3. **Final release** - Create a final release on an existing branch
 
+The existing release branch is the highest stable version among
+`origin/release/x.y.z` branches, compared using SemVer. Other names, including
+`release/toto_1.49.0` and branches with prerelease suffixes, are ignored.
+If none qualify, only **New beta** and **Quit** are offered.
+
 Before creating a new beta, choose the next development version for the base
 branch. The next minor version is suggested; you can enter any greater stable
 version, or `skip` to leave the base branch unchanged. The release branch keeps

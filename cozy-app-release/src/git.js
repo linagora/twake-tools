@@ -1,4 +1,6 @@
 import simpleGit from 'simple-git';
+import semver from 'semver';
+
 import { error } from './config.js';
 
 const git = simpleGit();
@@ -37,16 +39,13 @@ export async function checkoutAndPull(branch) {
 
 export async function getLatestReleaseBranch() {
   const branches = await git.branch(['-r']);
-  const releaseBranches = branches.all
-    .filter(b => b.includes('origin/release/'))
-    .map(b => b.replace('origin/', '').trim())
-    .sort((a, b) => {
-      const versionA = a.replace('release/', '');
-      const versionB = b.replace('release/', '');
-      return versionA.localeCompare(versionB, undefined, { numeric: true });
-    });
+  const versions = branches.all
+    .filter(branch => /^origin\/release\/\d+\.\d+\.\d+$/.test(branch))
+    .map(branch => branch.slice('origin/release/'.length))
+    .filter(version => semver.valid(version) !== null)
+    .sort(semver.rcompare);
 
-  return releaseBranches.length > 0 ? releaseBranches[releaseBranches.length - 1] : null;
+  return versions.length > 0 ? `release/${versions[0]}` : null;
 }
 
 export function getVersionFromBranch(branch) {
