@@ -89,3 +89,49 @@ test('rejects package versions that cannot be compared as stable versions', t =>
     assert.throws(() => runRelease(local, './version.js', 'release.getPackageVersion()'), /Unable to read valid version/);
   }
 });
+
+const invalidReleaseRefs = [
+  'origin/release/toto_1.49.0',
+  'origin/release/9.0.0-beta.1',
+  'origin/release/9.0.0+build',
+  'origin/release/v9.0.0',
+  'origin/release/01.0.0',
+  'origin/release/9.0',
+  'origin/release/99999999999999999999.0.0',
+  'upstream/release/9.0.0',
+  'upstream/origin/release/9.0.0',
+  'origin/feature/origin/release/9.0.0'
+];
+
+for (const { name, refs, expected } of [
+  {
+    name: 'ignores malformed release branches and branches from other remotes',
+    refs: [...invalidReleaseRefs, 'origin/release/1.108.0'],
+    expected: 'release/1.108.0'
+  },
+  {
+    name: 'selects the greatest stable release version',
+    refs: ['origin/release/1.99.0', 'origin/release/1.108.10', 'origin/release/0.999.999', 'origin/release/1.108.9'],
+    expected: 'release/1.108.10'
+  },
+  {
+    name: 'returns null when all release branch names are invalid',
+    refs: invalidReleaseRefs,
+    expected: null
+  },
+  {
+    name: 'returns null when no release branches exist',
+    refs: [],
+    expected: null
+  }
+]) {
+  test(name, t => {
+    const { local } = makeRepository(t);
+    for (const ref of refs) {
+      runGit(local, 'update-ref', `refs/remotes/${ref}`, 'HEAD');
+    }
+    const result = runRelease(local, './git.js',
+      'process.stdout.write(JSON.stringify(await release.getLatestReleaseBranch()))');
+    assert.equal(JSON.parse(result.toString()), expected);
+  });
+}
