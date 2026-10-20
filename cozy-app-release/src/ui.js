@@ -1,5 +1,20 @@
-import { select, confirm } from '@inquirer/prompts';
+import { select, confirm, input } from '@inquirer/prompts';
 import chalk from 'chalk';
+import semver from 'semver';
+
+import { incrementMinorVersion } from './version.js';
+
+export async function getNextDevelopmentVersion(currentVersion, baseBranch) {
+  const nextVersion = await input({
+    message: `Next development version on ${baseBranch} (or "skip" to leave it unchanged):`,
+    default: incrementMinorVersion(currentVersion),
+    validate: value => value === 'skip' || (
+      /^\d+\.\d+\.\d+$/.test(value) && semver.valid(value) && semver.gt(value, currentVersion)
+    ) || `Enter a stable version greater than ${currentVersion}, or "skip"`
+  });
+
+  return nextVersion === 'skip' ? null : nextVersion;
+}
 
 export async function showMainMenu(version, baseBranch, latestBranch) {
   console.log('');

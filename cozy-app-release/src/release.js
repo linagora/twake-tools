@@ -7,7 +7,7 @@ import simpleGit from 'simple-git';
 
 const gitClient = simpleGit();
 
-export async function createNewBetaBranch(currentVersion, baseBranch) {
+export async function createNewBetaBranch(currentVersion, baseBranch, releaseNotes = null) {
   const releaseBranch = `release/${currentVersion}`;
   const tag = `${currentVersion}-beta.1`;
 
@@ -18,16 +18,20 @@ export async function createNewBetaBranch(currentVersion, baseBranch) {
     error(`Branch ${releaseBranch} already exists`);
   }
 
+  const nextVersion = await ui.getNextDevelopmentVersion(currentVersion, baseBranch);
+
   await git.createBranch(releaseBranch, baseBranch);
   success(`Branch ${releaseBranch} created and pushed`);
 
   await git.createAndPushTag(tag, releaseBranch);
-  await github.createGitHubRelease(tag, true);
-  await bumpVersionOnMaster(currentVersion, baseBranch);
+  await github.createGitHubRelease(tag, true, releaseNotes);
+  if (nextVersion !== null) {
+    await bumpVersionOnMaster(currentVersion, baseBranch, nextVersion);
+  }
   await github.openReleasesPage();
 }
 
-export async function addBetaToExisting(latestBranch) {
+export async function addBetaToExisting(latestBranch, releaseNotes = null) {
   const baseVersion = git.getVersionFromBranch(latestBranch);
 
   info(`Searching for existing betas for ${baseVersion}...`);
@@ -53,11 +57,11 @@ export async function addBetaToExisting(latestBranch) {
 
   await gitClient.checkout(latestBranch);
   await git.createAndPushTag(nextBeta, latestBranch);
-  await github.createGitHubRelease(nextBeta, true);
+  await github.createGitHubRelease(nextBeta, true, releaseNotes);
   await github.openReleasesPage();
 }
 
-export async function createFinalRelease(latestBranch) {
+export async function createFinalRelease(latestBranch, releaseNotes = null) {
   const releaseVersion = git.getVersionFromBranch(latestBranch);
 
   info(`Creating final release ${releaseVersion} on ${latestBranch}...`);
@@ -75,13 +79,11 @@ export async function createFinalRelease(latestBranch) {
 
   await gitClient.checkout(latestBranch);
   await git.createAndPushTag(releaseVersion, latestBranch);
-  await github.createGitHubRelease(releaseVersion, false);
+  await github.createGitHubRelease(releaseVersion, false, releaseNotes);
   await github.openReleasesPage();
 }
 
-export async function bumpVersionOnMaster(oldVersion, baseBranch) {
-  const newVersion = version.incrementMinorVersion(oldVersion);
-
+export async function bumpVersionOnMaster(oldVersion, baseBranch, newVersion) {
   info(`Bumping version on ${baseBranch} to ${newVersion}...`);
 
   await gitClient.checkout(baseBranch);

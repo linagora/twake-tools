@@ -66,10 +66,10 @@ test('refuses to merge a diverged base branch', t => {
 
 test('pushes a normal version bump', t => {
   const { local, remote } = makeRepository(t);
-  runRelease(local, './release.js', 'release.bumpVersionOnMaster("1.2.0", "main")');
+  runRelease(local, './release.js', 'release.bumpVersionOnMaster("1.2.0", "main", "1.2.1")');
   assert.equal(runGit(local, 'rev-parse', 'HEAD'), runGit(remote, 'rev-parse', 'main'));
   for (const file of ['package.json', 'manifest.webapp']) {
-    assert.equal(JSON.parse(readFileSync(join(local, file), 'utf8')).version, '1.3.0');
+    assert.equal(JSON.parse(readFileSync(join(local, file), 'utf8')).version, '1.2.1');
   }
 });
 
@@ -78,6 +78,14 @@ test('does not overwrite a known remote commit when pushing a version bump', t =
   const remoteHead = saveCommit(other, 'remote-change');
   runGit(other, 'push', 'origin', 'main');
   runGit(local, 'fetch', 'origin');
-  assert.throws(() => runRelease(local, './release.js', 'release.bumpVersionOnMaster("1.2.0", "main")'), /rejected|non-fast-forward/i);
+  assert.throws(() => runRelease(local, './release.js', 'release.bumpVersionOnMaster("1.2.0", "main", "1.2.1")'), /rejected|non-fast-forward/i);
   assert.equal(runGit(remote, 'rev-parse', 'main'), remoteHead);
+});
+
+test('rejects package versions that cannot be compared as stable versions', t => {
+  const { local } = makeRepository(t);
+  for (const version of ['01.2.0', '1.2.0-beta.1', '99999999999999999999.0.0']) {
+    writeFileSync(join(local, 'package.json'), JSON.stringify({ version }));
+    assert.throws(() => runRelease(local, './version.js', 'release.getPackageVersion()'), /Unable to read valid version/);
+  }
 });
