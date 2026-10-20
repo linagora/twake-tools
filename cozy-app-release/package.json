@@ -9,7 +9,7 @@
   },
   "scripts": {
     "start": "node src/index.js",
-    "test": "echo 'No tests yet - add functional tests when needed'",
+    "test": "node --experimental-test-module-mocks --test src/*.spec.js",
     "lint": "eslint src/"
   },
   "keywords": [
