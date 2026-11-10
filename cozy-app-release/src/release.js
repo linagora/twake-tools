@@ -7,7 +7,7 @@ import simpleGit from 'simple-git';
 
 const gitClient = simpleGit();
 
-export async function createNewBetaBranch(currentVersion, baseBranch, releaseNotes = null) {
+export async function createNewBetaBranch(currentVersion, baseBranch, releaseNotes = null, options = {}) {
   const releaseBranch = `release/${currentVersion}`;
   const tag = `${currentVersion}-beta.1`;
 
@@ -18,7 +18,7 @@ export async function createNewBetaBranch(currentVersion, baseBranch, releaseNot
     error(`Branch ${releaseBranch} already exists`);
   }
 
-  const nextVersion = await ui.getNextDevelopmentVersion(currentVersion, baseBranch);
+  const nextVersion = await ui.getNextDevelopmentVersion(currentVersion, baseBranch, options.nextVersion);
 
   await git.createBranch(releaseBranch, baseBranch);
   success(`Branch ${releaseBranch} created and pushed`);
@@ -31,7 +31,7 @@ export async function createNewBetaBranch(currentVersion, baseBranch, releaseNot
   await github.openReleasesPage();
 }
 
-export async function addBetaToExisting(latestBranch, releaseNotes = null) {
+export async function addBetaToExisting(latestBranch, releaseNotes = null, options = {}) {
   const baseVersion = git.getVersionFromBranch(latestBranch);
 
   info(`Searching for existing betas for ${baseVersion}...`);
@@ -49,7 +49,7 @@ export async function addBetaToExisting(latestBranch, releaseNotes = null) {
     info(`Proposing: ${nextBeta}`);
   }
 
-  const confirmed = await ui.confirmCreation(nextBeta);
+  const confirmed = await ui.confirmCreation(nextBeta, options.yes);
   if (!confirmed) {
     info('Operation cancelled');
     return;
@@ -61,7 +61,7 @@ export async function addBetaToExisting(latestBranch, releaseNotes = null) {
   await github.openReleasesPage();
 }
 
-export async function createFinalRelease(latestBranch, releaseNotes = null) {
+export async function createFinalRelease(latestBranch, releaseNotes = null, options = {}) {
   const releaseVersion = git.getVersionFromBranch(latestBranch);
 
   info(`Creating final release ${releaseVersion} on ${latestBranch}...`);
@@ -71,7 +71,7 @@ export async function createFinalRelease(latestBranch, releaseNotes = null) {
     error(`Tag ${releaseVersion} already exists`);
   }
 
-  const confirmed = await ui.confirmFinalRelease(releaseVersion);
+  const confirmed = await ui.confirmFinalRelease(releaseVersion, options.yes);
   if (!confirmed) {
     info('Operation cancelled');
     return;
