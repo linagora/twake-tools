@@ -3,14 +3,21 @@ import chalk from 'chalk';
 import semver from 'semver';
 
 import { incrementMinorVersion } from './version.js';
+import { error } from './config.js';
 
-export async function getNextDevelopmentVersion(currentVersion, baseBranch) {
-  const nextVersion = await input({
+export async function getNextDevelopmentVersion(currentVersion, baseBranch, preset) {
+  const validate = value => value === 'skip' || (
+    /^\d+\.\d+\.\d+$/.test(value) && semver.valid(value) && semver.gt(value, currentVersion)
+  ) || `Enter a stable version greater than ${currentVersion}, or "skip"`;
+
+  if (preset !== undefined && validate(preset) !== true) {
+    error(`--next-version ${preset}: ${validate(preset)}`);
+  }
+
+  const nextVersion = preset ?? await input({
     message: `Next development version on ${baseBranch} (or "skip" to leave it unchanged):`,
     default: incrementMinorVersion(currentVersion),
-    validate: value => value === 'skip' || (
-      /^\d+\.\d+\.\d+$/.test(value) && semver.valid(value) && semver.gt(value, currentVersion)
-    ) || `Enter a stable version greater than ${currentVersion}, or "skip"`
+    validate
   });
 
   return nextVersion === 'skip' ? null : nextVersion;
@@ -75,15 +82,15 @@ export async function showMainMenu(version, baseBranch, latestBranch) {
   return choice;
 }
 
-export async function confirmCreation(tag) {
-  return await confirm({
+export async function confirmCreation(tag, yes = false) {
+  return yes || await confirm({
     message: `Confirm creation of tag ${tag}?`,
     default: true
   });
 }
 
-export async function confirmFinalRelease(version) {
-  return await confirm({
+export async function confirmFinalRelease(version, yes = false) {
+  return yes || await confirm({
     message: `Confirm creation of final release ${version}?`,
     default: true
   });

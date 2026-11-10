@@ -8,8 +8,20 @@ import * as ui from './ui.js';
 import * as release from './release.js';
 import { error, success, info } from './config.js';
 
+const ACTIONS = ['new-beta', 'add-beta', 'final-release'];
+
 export async function main(args = process.argv.slice(2)) {
-  const { values } = parseArgs({ args, options: { 'notes-file': { type: 'string' } } });
+  const { values } = parseArgs({ args, options: {
+    'notes-file': { type: 'string' },
+    action: { type: 'string' },
+    'next-version': { type: 'string' },
+    yes: { type: 'boolean' }
+  } });
+  const action = values.action ?? null;
+  if (action !== null && !ACTIONS.includes(action)) {
+    error(`--action must be one of: ${ACTIONS.join(', ')}`);
+  }
+  const options = { nextVersion: values['next-version'], yes: values.yes === true };
   const notesPath = values['notes-file'] ?? null;
   const releaseNotes = notesPath === null ? null : await readFile(notesPath, 'utf8');
   if (releaseNotes !== null && !releaseNotes.trim()) {
@@ -51,11 +63,11 @@ export async function main(args = process.argv.slice(2)) {
 
   // Main menu loop
   while (true) {
-    const choice = await ui.showMainMenu(currentVersion, baseBranch, latestBranch);
+    const choice = action ?? await ui.showMainMenu(currentVersion, baseBranch, latestBranch);
 
     switch (choice) {
       case 'new-beta':
-        await release.createNewBetaBranch(currentVersion, baseBranch, releaseNotes);
+        await release.createNewBetaBranch(currentVersion, baseBranch, releaseNotes, options);
         success('Operation completed successfully!');
         return;
 
@@ -63,7 +75,7 @@ export async function main(args = process.argv.slice(2)) {
         if (!latestBranch) {
           error('Option not available');
         }
-        await release.addBetaToExisting(latestBranch, releaseNotes);
+        await release.addBetaToExisting(latestBranch, releaseNotes, options);
         success('Operation completed successfully!');
         return;
 
@@ -71,7 +83,7 @@ export async function main(args = process.argv.slice(2)) {
         if (!latestBranch) {
           error('Option not available');
         }
-        await release.createFinalRelease(latestBranch, releaseNotes);
+        await release.createFinalRelease(latestBranch, releaseNotes, options);
         success('Operation completed successfully!');
         return;
 

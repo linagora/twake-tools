@@ -64,6 +64,22 @@ before any branch changes, and its contents are published as written. Missing,
 unreadable, or empty files stop the command before release preparation begins.
 Without this option, GitHub generates the notes as before.
 
+### Without prompts
+
+Scripts and coding agents can answer every prompt with flags:
+
+```bash
+# New beta, then bump the base branch to 1.4.0 (or --next-version skip)
+cozy-app-release --action new-beta --next-version 1.4.0
+# Next beta, or final release, on the latest release branch
+cozy-app-release --action add-beta --yes
+cozy-app-release --action final-release --yes
+```
+
+`--action` replaces the menu, `--next-version` answers the development version
+prompt, and `--yes` confirms the tag. An invalid value stops the command before
+any branch or tag is created.
+
 ## Features
 
 - Interactive menu with @inquirer/prompts
