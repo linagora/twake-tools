@@ -87,8 +87,8 @@ export const bumpVersionOnMaster = async ({ oldVersion, baseBranch, newVersion }
   info(`Bumping version on ${baseBranch} to ${newVersion}...`);
 
   await gitClient.checkout(baseBranch);
-  await version.updateVersionInFiles(oldVersion, newVersion);
-  await gitClient.add(['package.json', 'manifest.webapp']);
+  const updatedFiles = await version.updateVersionInFiles(oldVersion, newVersion);
+  await gitClient.add(updatedFiles);
   await gitClient.commit(`chore: Bump to ${newVersion}`);
 
   try {
