@@ -2,7 +2,7 @@ import * as git from './git.js';
 import * as version from './version.js';
 import * as github from './github.js';
 import * as ui from './ui.js';
-import { info, success, error } from './config.js';
+import { info, success, warning, error } from './config.js';
 import simpleGit from 'simple-git';
 
 const gitClient = simpleGit();
@@ -26,7 +26,7 @@ export async function createNewBetaBranch(currentVersion, baseBranch, releaseNot
   await git.createAndPushTag(tag, releaseBranch);
   await github.createGitHubRelease(tag, true, releaseNotes);
   if (nextVersion !== null) {
-    await bumpVersionOnMaster(currentVersion, baseBranch, nextVersion);
+    await bumpVersionOnMaster({ oldVersion: currentVersion, baseBranch, newVersion: nextVersion });
   }
   await github.openReleasesPage();
 }
@@ -83,15 +83,34 @@ export async function createFinalRelease(latestBranch, releaseNotes = null, opti
   await github.openReleasesPage();
 }
 
-export async function bumpVersionOnMaster(oldVersion, baseBranch, newVersion) {
+export const bumpVersionOnMaster = async ({ oldVersion, baseBranch, newVersion }) => {
   info(`Bumping version on ${baseBranch} to ${newVersion}...`);
 
   await gitClient.checkout(baseBranch);
   await version.updateVersionInFiles(oldVersion, newVersion);
-
   await gitClient.add(['package.json', 'manifest.webapp']);
   await gitClient.commit(`chore: Bump to ${newVersion}`);
-  await gitClient.push(['origin', baseBranch]);
 
-  success(`Version bumped to ${newVersion} on ${baseBranch}`);
-}
+  try {
+    await gitClient.push(['origin', baseBranch]);
+    success(`Version bumped to ${newVersion} on ${baseBranch}`);
+  } catch {
+    warning(`${baseBranch} refused the push, opening a pull request instead...`);
+    await openVersionBumpPullRequest({ oldVersion, baseBranch, newVersion });
+  }
+};
+
+const openVersionBumpPullRequest = async ({ oldVersion, baseBranch, newVersion }) => {
+  const bumpBranch = `chore/bump-${newVersion}`;
+
+  await gitClient.checkoutLocalBranch(bumpBranch);
+  await gitClient.branch(['-f', baseBranch, `origin/${baseBranch}`]);
+  await gitClient.push(['-u', 'origin', bumpBranch]);
+  await github.createPullRequest({
+    baseBranch,
+    headBranch: bumpBranch,
+    title: `chore: Bump to ${newVersion}`,
+    body: `Bump the development version to ${newVersion} after the ${oldVersion} beta.`
+  });
+  await gitClient.checkout(baseBranch);
+};

@@ -66,27 +66,37 @@ test('refuses to merge a diverged base branch', t => {
 
 test('pushes a normal version bump', t => {
   const { local, remote } = makeRepository(t);
-  runRelease(local, './release.js', 'release.bumpVersionOnMaster("1.2.0", "main", "1.2.1")');
+  runRelease(local, './release.js', 'release.bumpVersionOnMaster({ oldVersion: "1.2.0", baseBranch: "main", newVersion: "1.2.1" })');
   assert.equal(runGit(local, 'rev-parse', 'HEAD'), runGit(remote, 'rev-parse', 'main'));
   for (const file of ['package.json', 'manifest.webapp']) {
     assert.equal(JSON.parse(readFileSync(join(local, file), 'utf8')).version, '1.2.1');
   }
 });
 
-test('does not overwrite a known remote commit when pushing a version bump', t => {
+test('moves a rejected version bump to its own branch without overwriting the remote', t => {
   const { local, other, remote } = makeRepository(t);
   const remoteHead = saveCommit(other, 'remote-change');
   runGit(other, 'push', 'origin', 'main');
   runGit(local, 'fetch', 'origin');
-  assert.throws(() => runRelease(local, './release.js', 'release.bumpVersionOnMaster("1.2.0", "main", "1.2.1")'), /rejected|non-fast-forward/i);
+  // No GitHub remote in this repository, so the pull request creation itself fails
+  assert.throws(() => runRelease(local, './release.js', 'release.bumpVersionOnMaster({ oldVersion: "1.2.0", baseBranch: "main", newVersion: "1.2.1" })'), /pull request/);
   assert.equal(runGit(remote, 'rev-parse', 'main'), remoteHead);
+  assert.equal(runGit(remote, 'log', '-1', '--format=%s', 'chore/bump-1.2.1'), 'chore: Bump to 1.2.1');
+  assert.equal(runGit(local, 'rev-parse', 'main'), remoteHead);
 });
 
-test('rejects package versions that cannot be compared as stable versions', t => {
+test('reads the app version from manifest.webapp, whatever package.json says', t => {
+  const { local } = makeRepository(t);
+  writeFileSync(join(local, 'package.json'), JSON.stringify({ version: '0.0.0' }));
+  const result = runRelease(local, './version.js', 'process.stdout.write(await release.fetchAppVersion())');
+  assert.equal(result.toString(), '1.2.0');
+});
+
+test('rejects app versions that cannot be compared as stable versions', t => {
   const { local } = makeRepository(t);
   for (const version of ['01.2.0', '1.2.0-beta.1', '99999999999999999999.0.0']) {
-    writeFileSync(join(local, 'package.json'), JSON.stringify({ version }));
-    assert.throws(() => runRelease(local, './version.js', 'release.getPackageVersion()'), /Unable to read valid version/);
+    writeFileSync(join(local, 'manifest.webapp'), JSON.stringify({ version }));
+    assert.throws(() => runRelease(local, './version.js', 'release.fetchAppVersion()'), /Unable to read valid version/);
   }
 });
 

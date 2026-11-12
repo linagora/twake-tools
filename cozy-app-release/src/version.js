@@ -3,20 +3,20 @@ import semver from 'semver';
 
 import { error } from './config.js';
 
-export async function getPackageVersion() {
+export const fetchAppVersion = async () => {
   try {
-    const content = await fs.readFile('package.json', 'utf8');
-    const pkg = JSON.parse(content);
+    const content = await fs.readFile('manifest.webapp', 'utf8');
+    const manifest = JSON.parse(content);
 
-    if (!semver.valid(pkg.version) || !/^\d+\.\d+\.\d+$/.test(pkg.version)) {
-      error('Unable to read valid version from package.json');
+    if (!semver.valid(manifest.version) || !/^\d+\.\d+\.\d+$/.test(manifest.version)) {
+      error('Unable to read valid version from manifest.webapp');
     }
 
-    return pkg.version;
+    return manifest.version;
   } catch {
-    error('package.json not found or invalid');
+    error('manifest.webapp not found or invalid');
   }
-}
+};
 
 export function incrementMinorVersion(version) {
   const [major, minor] = version.split('.');
