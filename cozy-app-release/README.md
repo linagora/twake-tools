@@ -51,8 +51,9 @@ The current version is read from `manifest.webapp`; `package.json` is bumped
 too when it holds the same version.
 
 The base branch is updated only by a fast-forward pull. The version bump uses
-a normal push and stops if the remote branch has diverged. Resolve the branch
-divergence before retrying; an already published beta must not be recreated.
+a normal push, never a force push. When the remote refuses it (protected
+branch, ruleset, or a diverged branch), the bump commit moves to a
+`chore/bump-x.y.z` branch and a pull request is opened against the base branch.
 
 ### Prepared release notes
 

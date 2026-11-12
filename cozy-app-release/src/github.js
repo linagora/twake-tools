@@ -55,6 +55,17 @@ export async function createGitHubRelease(tag, isPrerelease = false, releaseNote
   }
 }
 
+export const createPullRequest = async ({ baseBranch, headBranch, title, body }) => {
+  try {
+    const { stdout } = await execa('gh', [
+      'pr', 'create', '--base', baseBranch, '--head', headBranch, '--title', title, '--body', body
+    ], { stdin: 'ignore', timeout: 60000 });
+    success(`Pull request created: ${stdout.trim()}`);
+  } catch (e) {
+    error(`Unable to create the pull request: ${e.message}`);
+  }
+};
+
 export async function openReleasesPage() {
   info('Opening GitHub releases page...');
   try {

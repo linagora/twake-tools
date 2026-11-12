@@ -66,20 +66,23 @@ test('refuses to merge a diverged base branch', t => {
 
 test('pushes a normal version bump', t => {
   const { local, remote } = makeRepository(t);
-  runRelease(local, './release.js', 'release.bumpVersionOnMaster("1.2.0", "main", "1.2.1")');
+  runRelease(local, './release.js', 'release.bumpVersionOnMaster({ oldVersion: "1.2.0", baseBranch: "main", newVersion: "1.2.1" })');
   assert.equal(runGit(local, 'rev-parse', 'HEAD'), runGit(remote, 'rev-parse', 'main'));
   for (const file of ['package.json', 'manifest.webapp']) {
     assert.equal(JSON.parse(readFileSync(join(local, file), 'utf8')).version, '1.2.1');
   }
 });
 
-test('does not overwrite a known remote commit when pushing a version bump', t => {
+test('moves a rejected version bump to its own branch without overwriting the remote', t => {
   const { local, other, remote } = makeRepository(t);
   const remoteHead = saveCommit(other, 'remote-change');
   runGit(other, 'push', 'origin', 'main');
   runGit(local, 'fetch', 'origin');
-  assert.throws(() => runRelease(local, './release.js', 'release.bumpVersionOnMaster("1.2.0", "main", "1.2.1")'), /rejected|non-fast-forward/i);
+  // No GitHub remote in this repository, so the pull request creation itself fails
+  assert.throws(() => runRelease(local, './release.js', 'release.bumpVersionOnMaster({ oldVersion: "1.2.0", baseBranch: "main", newVersion: "1.2.1" })'), /pull request/);
   assert.equal(runGit(remote, 'rev-parse', 'main'), remoteHead);
+  assert.equal(runGit(remote, 'log', '-1', '--format=%s', 'chore/bump-1.2.1'), 'chore: Bump to 1.2.1');
+  assert.equal(runGit(local, 'rev-parse', 'main'), remoteHead);
 });
 
 test('reads the app version from manifest.webapp, whatever package.json says', t => {
