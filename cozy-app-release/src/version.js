@@ -1,7 +1,10 @@
 import { promises as fs } from 'fs';
 import semver from 'semver';
+import simpleGit from 'simple-git';
 
 import { error } from './config.js';
+
+const VERSION_FILE_PATHSPECS = [':(glob)**/package.json', ':(glob)**/manifest.webapp'];
 
 export const fetchAppVersion = async () => {
   try {
@@ -33,19 +36,22 @@ export function incrementBeta(latestBeta) {
   return `${baseVersion}-beta.${parseInt(betaNum) + 1}`;
 }
 
-export async function updateVersionInFiles(oldVersion, newVersion) {
-  const files = ['package.json', 'manifest.webapp'];
+export const updateVersionInFiles = async (oldVersion, newVersion) => {
+  const listing = await simpleGit().raw(['ls-files', '--', ...VERSION_FILE_PATHSPECS]);
+  const files = listing.split('\n').filter(file => file !== '');
+  const updatedFiles = [];
 
   for (const file of files) {
-    try {
-      const content = await fs.readFile(file, 'utf8');
-      const updated = content.replace(
-        new RegExp(`"version":\\s*"${oldVersion}"`, 'g'),
-        `"version": "${newVersion}"`
-      );
+    const content = await fs.readFile(file, 'utf8');
+    const updated = content.replace(
+      new RegExp(`"version":\\s*"${oldVersion}"`, 'g'),
+      `"version": "${newVersion}"`
+    );
+    if (updated !== content) {
       await fs.writeFile(file, updated);
-    } catch {
-      // File doesn't exist, skip
+      updatedFiles.push(file);
     }
   }
-}
+
+  return updatedFiles;
+};

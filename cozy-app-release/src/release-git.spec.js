@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
@@ -61,6 +61,22 @@ test('refuses to merge a diverged base branch', t => {
   runGit(other, 'push', 'origin', 'main');
   assert.throws(() => runRelease(local, './git.js', 'release.checkoutAndPull("main")'), /fast-forward/i);
   assert.equal(runGit(local, 'rev-parse', 'HEAD'), head);
+  assert.equal(runGit(local, 'status', '--porcelain'), '');
+});
+
+test('bumps every tracked version file holding the current version', t => {
+  const { local } = makeRepository(t);
+  mkdirSync(join(local, 'src'));
+  writeFileSync(join(local, 'src', 'package.json'), '{"version": "1.2.0"}\n');
+  mkdirSync(join(local, 'tools'));
+  writeFileSync(join(local, 'tools', 'package.json'), '{"version": "3.0.0"}\n');
+  runGit(local, 'add', '.');
+  runGit(local, 'commit', '-m', 'Nested packages');
+  runGit(local, 'push', 'origin', 'main');
+  runRelease(local, './release.js', 'release.bumpVersionOnMaster({ oldVersion: "1.2.0", baseBranch: "main", newVersion: "1.2.1" })');
+  const versions = ['package.json', 'manifest.webapp', 'src/package.json', 'tools/package.json']
+    .map(file => JSON.parse(readFileSync(join(local, file), 'utf8')).version);
+  assert.deepEqual(versions, ['1.2.1', '1.2.1', '1.2.1', '3.0.0']);
   assert.equal(runGit(local, 'status', '--porcelain'), '');
 });
 
