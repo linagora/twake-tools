@@ -55,8 +55,7 @@ export async function main(args = process.argv.slice(2)) {
   // Update base branch
   await git.checkoutAndPull(baseBranch);
 
-  // Read version from package.json
-  const currentVersion = await version.getPackageVersion();
+  const currentVersion = await version.fetchAppVersion();
 
   // Find latest release branch
   const latestBranch = await git.getLatestReleaseBranch();

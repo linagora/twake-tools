@@ -31,6 +31,11 @@ mock.module('./git.js', { namedExports: {
   getVersionFromBranch: branch => branch.replace('release/', ''),
   getLatestBeta: async () => '1.2.0-beta.1'
 } });
+mock.module('./version.js', { namedExports: {
+  fetchAppVersion: async () => '1.0.0',
+  incrementBeta: () => '1.2.0-beta.2',
+  updateVersionInFiles: async () => null
+} });
 mock.module('./ui.js', { namedExports: {
   showMainMenu,
   getNextDevelopmentVersion: async () => null,

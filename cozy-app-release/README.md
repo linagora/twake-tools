@@ -47,6 +47,9 @@ branch. The next minor version is suggested; you can enter any greater stable
 version, or `skip` to leave the base branch unchanged. The release branch keeps
 the current version. Cancelling this prompt creates no release branch or tag.
 
+The current version is read from `manifest.webapp`; `package.json` is bumped
+too when it holds the same version.
+
 The base branch is updated only by a fast-forward pull. The version bump uses
 a normal push and stops if the remote branch has diverged. Resolve the branch
 divergence before retrying; an already published beta must not be recreated.
